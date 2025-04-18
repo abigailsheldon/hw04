@@ -21,14 +21,21 @@ class _LoginScreenState extends State<LoginScreen> {
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(children: [
+          
+          // Email
           TextField(decoration: const InputDecoration(labelText: 'Email'),
             onChanged: (v)=>email=v),
+
+          // Password
           TextField(decoration: const InputDecoration(labelText: 'Password'),
             obscureText: true, onChanged: (v)=>pwd=v),
           const SizedBox(height: 20),
+          
           ElevatedButton(
             child: const Text('Login'),
             onPressed: () async {
+              
+              // Attempt login and if success, navigate to board list
               final user = await _authS.login(email, pwd);
               if (user!=null) {
                 Navigator.pushReplacement(ctx,
