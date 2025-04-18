@@ -15,26 +15,35 @@ class _ChatScreenState extends State<ChatScreen> {
   final _auth = FirebaseAuth.instance;
   final _ctrl = TextEditingController();
 
+  // Keep a CollectionReference for writes (adding messages)
+  late final CollectionReference _messagesRef;
+
   @override
-  Widget build(BuildContext ctx) {
-    // Reference the sub‑collection for this board, ordered newest first
-    final coll = _db
+  void initState() {
+    super.initState();
+    // Point at the messages subcollection for this board
+    _messagesRef = _db
       .collection('boards')
       .doc(widget.boardName)
-      .collection('messages')
+      .collection('messages');
+  }
+
+  @override
+  Widget build(BuildContext ctx) {
+    // Create a Query on that collection for ordering / reading
+    final Query orderedMessages = _messagesRef
       .orderBy('sentAt', descending: true);
 
     return Scaffold(
       appBar: AppBar(title: Text(widget.boardName)),
       body: Column(children: [
-        // Message list
+
         Expanded(
           child: StreamBuilder<QuerySnapshot>(
-            stream: coll.snapshots(),
+            stream: orderedMessages.snapshots(),
             builder: (ctx, snap) {
-              if (!snap.hasData) 
+              if (!snap.hasData)
                 return const Center(child: CircularProgressIndicator());
-
               final docs = snap.data!.docs;
               return ListView.builder(
                 reverse: true,
@@ -44,11 +53,10 @@ class _ChatScreenState extends State<ChatScreen> {
                   final txt = d['text'];
                   final user= d['senderName'];
                   final dt  = (d['sentAt'] as Timestamp).toDate();
-
                   return ListTile(
-                    title: Text(user),        // Sender’s name
-                    subtitle: Text(txt),      // Message text
-                    trailing: Text(           // HH:MM timestamp
+                    title: Text(user),
+                    subtitle: Text(txt),
+                    trailing: Text(
                       '${dt.hour.toString().padLeft(2,'0')}:${dt.minute.toString().padLeft(2,'0')}',
                     ),
                   );
@@ -58,9 +66,9 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
         ),
 
-        // Input bar
+        // Input and send
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal:8),
+          padding: const EdgeInsets.symmetric(horizontal: 8),
           child: Row(children: [
             Expanded(
               child: TextField(
@@ -73,14 +81,12 @@ class _ChatScreenState extends State<ChatScreen> {
               onPressed: () async {
                 final u = _auth.currentUser!;
                 
-                final prof = await FirebaseFirestore.instance
-                  .collection('users')
-                  .doc(u.uid)
-                  .get();
+                // Fetch display name
+                final prof = await _db.collection('users').doc(u.uid).get();
                 final senderName = '${prof['firstName']} ${prof['lastName']}';
 
-                // Add new message doc
-                await coll.add({
+                // Use the CollectionReference to add a new message
+                await _messagesRef.add({
                   'text': _ctrl.text,
                   'sentAt': FieldValue.serverTimestamp(),
                   'senderName': senderName,
