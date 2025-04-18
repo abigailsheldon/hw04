@@ -12,6 +12,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
+    // After 2 seconds navigate to login
     Timer(const Duration(seconds: 2), () {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => const LoginScreen()),
@@ -21,7 +22,17 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext ctx) {
-  
+    return Scaffold(
+      body: Center(
+        child: Text(
+          'Chatboards',
+          style: TextStyle(
+            fontSize: 48,
+            color: Colors.indigo,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
   }
-
 }

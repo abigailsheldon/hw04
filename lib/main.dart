@@ -19,6 +19,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Chatboards',
       theme: ThemeData(primarySwatch: Colors.indigo),
+      // First screen
       home: const SplashScreen(),
     );
   }
