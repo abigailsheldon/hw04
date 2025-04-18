@@ -7,3 +7,17 @@ class ProfileScreen extends StatefulWidget {
   @override
   _ProfileScreenState createState() => _ProfileScreenState();
 }
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  final _db   = FirebaseFirestore.instance;
+  final _auth = FirebaseAuth.instance;
+  final _form = GlobalKey<FormState>();
+  String first='', last='', role='';
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+}

@@ -8,3 +8,15 @@ class ChatScreen extends StatefulWidget {
   @override
   _ChatScreenState createState() => _ChatScreenState();
 }
+
+class _ChatScreenState extends State<ChatScreen> {
+  final _db = FirebaseFirestore.instance;
+  final _auth = FirebaseAuth.instance;
+  final _ctrl = TextEditingController();
+
+  @override
+  Widget build(BuildContext ctx) {
+
+  }
+
+}

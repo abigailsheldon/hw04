@@ -12,3 +12,10 @@ class BoardListScreen extends StatelessWidget {
     {'name':'Music','icon':Icons.music_note},
     {'name':'Tech','icon':Icons.computer},
   ];
+
+  @override
+  Widget build(BuildContext ctx) {
+
+  }
+
+}

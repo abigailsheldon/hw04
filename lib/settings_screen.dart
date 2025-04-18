@@ -6,4 +6,10 @@ class SettingsScreen extends StatelessWidget {
   const SettingsScreen();
   final _authS = AuthService();
 
+
+  @override
+  Widget build(BuildContext ctx) {
+
+  }
+
 }
