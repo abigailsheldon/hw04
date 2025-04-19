@@ -5,7 +5,6 @@ import 'package:intl/intl.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen();
-
   @override
   _ProfileScreenState createState() => _ProfileScreenState();
 }
@@ -29,9 +28,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final doc = await _db.collection('users').doc(uid).get();
 
     setState(() {
-      _first = doc['firstName'] ?? '';
-      _last  = doc['lastName']  ?? '';
-      _role  = doc['role']      ?? '';
+      _first = doc.data()?['firstName'] ?? '';
+      _last  = doc.data()?['lastName']  ?? '';
+      _role  = doc.data()?['role']      ?? '';
       if (doc.data()?.containsKey('dob') ?? false) {
         _dob = (doc['dob'] as Timestamp).toDate();
       }
@@ -46,9 +45,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       firstDate: DateTime(1900),
       lastDate: now,
     );
-    if (picked != null) {
-      setState(() => _dob = picked);
-    }
+    if (picked != null) setState(() => _dob = picked);
   }
 
   @override
@@ -63,75 +60,72 @@ class _ProfileScreenState extends State<ProfileScreen> {
         padding: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,
-          child: ListView(
-            children: [
+          child: ListView(children: [
 
-              // First Name
-              TextFormField(
-                initialValue: _first,
-                decoration: const InputDecoration(labelText: 'First Name'),
-                validator: (v) => v != null && v.isNotEmpty ? null : 'Required',
-                onChanged: (v) => _first = v,
-              ),
+            TextFormField(
+              initialValue: _first,
+              decoration: const InputDecoration(labelText: 'First Name'),
+              validator: (v) => v != null && v.isNotEmpty ? null : 'Required',
+              onChanged: (v) => _first = v,
+            ),
 
-              const SizedBox(height: 12),
+            const SizedBox(height: 12),
 
-              // Last Name
-              TextFormField(
-                initialValue: _last,
-                decoration: const InputDecoration(labelText: 'Last Name'),
-                validator: (v) => v != null && v.isNotEmpty ? null : 'Required',
-                onChanged: (v) => _last = v,
-              ),
+            TextFormField(
+              initialValue: _last,
+              decoration: const InputDecoration(labelText: 'Last Name'),
+              validator: (v) => v != null && v.isNotEmpty ? null : 'Required',
+              onChanged: (v) => _last = v,
+            ),
 
-              const SizedBox(height: 12),
+            const SizedBox(height: 12),
 
-              // Role
-              TextFormField(
-                initialValue: _role,
-                decoration: const InputDecoration(labelText: 'Role'),
-                onChanged: (v) => _role = v,
-              ),
+            TextFormField(
+              initialValue: _role,
+              decoration: const InputDecoration(labelText: 'Role'),
+              onChanged: (v) => _role = v,
+            ),
 
-              const SizedBox(height: 20),
+            const SizedBox(height: 20),
 
-              // Date of Birth picker
-              ListTile(
-                title: const Text('Date of Birth'),
-                subtitle: Text(dobText),
-                trailing: const Icon(Icons.calendar_month),
-                onTap: _pickDob,
-              ),
+            ListTile(
+              title: const Text('Date of Birth'),
+              subtitle: Text(dobText),
+              trailing: const Icon(Icons.calendar_month),
+              onTap: _pickDob,
+            ),
 
-              const SizedBox(height: 24),
+            const SizedBox(height: 24),
 
-              // Save button
-              ElevatedButton(
-                child: const Text('Save Profile'),
-                onPressed: () async {
-                  if (!_formKey.currentState!.validate()) return;
+            ElevatedButton(
+              child: const Text('Save Profile'),
+              onPressed: () async {
+                if (!_formKey.currentState!.validate()) return;
+                final uid = _auth.currentUser!.uid;
 
-                  final uid = _auth.currentUser!.uid;
-                  final Map<String, dynamic> data = {
-                    'firstName': _first,
-                    'lastName':  _last,
-                    'role':      _role,
-                  };
+                final Map<String, dynamic> data = {
+                  'firstName': _first,
+                  'lastName':  _last,
+                  'role':      _role,
+                };
 
-                  if (_dob != null) {
-                    data['dob'] = Timestamp.fromDate(_dob!);
-                  }
+                if (_dob != null) {
+                  data['dob'] = Timestamp.fromDate(_dob!);
+                }
 
-                  await _db.collection('users').doc(uid).update(data);
+                // Use set with merge so that doc is created if missing
+                await _db
+                  .collection('users')
+                  .doc(uid)
+                  .set(data, SetOptions(merge: true));
 
-                  if (!mounted) return;
-                  ScaffoldMessenger.of(ctx).showSnackBar(
-                    const SnackBar(content: Text('Profile updated'))
-                  );
-                },
-              ),
-            ],
-          ),
+                if (!mounted) return;
+                ScaffoldMessenger.of(ctx).showSnackBar(
+                  const SnackBar(content: Text('Profile updated')),
+                );
+              },
+            ),
+          ]),
         ),
       ),
     );
